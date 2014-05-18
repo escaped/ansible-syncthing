@@ -15,13 +15,14 @@
   register: download
 
 - name: extract
-  command: tar xvzf /tmp/syncthing.tar.gz -C /tmp
+  command: tar xvzf /tmp/syncthing_{{syncthing_version}}.tar.gz -C /tmp
   when: download|changed
 
 
 - name: copy executable to home dir
   shell: cp /tmp/syncthing-*/syncthing /home/syncthing/bin/syncthing
   when: download|changed
+  notify: restart syncthing
 
 - name: set ownership
   file: path={{syncthing.home}} recurse=yes owner={{syncthing.user}} group={{syncthing.user}}

@@ -5,7 +5,7 @@ serf_architecture:
   armv6l: armv6
   armv7l: armv7
 
-syncthing_version: 0.8.5
+syncthing_version: 0.9.6
 syncthing_url: https://github.com/calmh/syncthing/releases/download/v{{syncthing_version}}/syncthing-{{ansible_system|lower}}-{{serf_architecture[ansible_architecture]}}-v{{syncthing_version}}.tar.gz
 syncthing:
   user: syncthing

@@ -1,42 +1,95 @@
 ---
 - name: add user
-  user: name=syncthing shell=/usr/bin/bash home={{syncthing.home}}
+  user: name=syncthing shell=/bin/bash home={{syncthing_home}}
 
 - name: create `sync` and `home` folder
-  file: path={{syncthing.home}}/Sync recurse=yes state=directory
-        owner={{syncthing.user}} group={{syncthing.user}} mode=700
+  file: path={{syncthing_home}}/Sync recurse=yes state=directory
+        owner={{syncthing_user}} group={{syncthing_user}} mode=700
 
 - name: create `bin` folder
-  file: path={{syncthing.home}}/bin state=directory
-        owner={{syncthing.user}} group={{syncthing.user}} mode=700
+  file: path={{syncthing_home}}/bin state=directory
+        owner={{syncthing_user}} group={{syncthing_user}} mode=700
+
+- name: check syncthing version
+  shell: "{{syncthing_home}}/bin/syncthing --version | awk '{ print $2 }' | cut -c 2-"
+  changed_when: false
+  ignore_errors: true
+  register: version
 
 - name: download
   get_url: url="{{syncthing_url}}" dest=/tmp/syncthing_{{syncthing_version}}.tar.gz
-  register: download
+  when: version|failed or version.stdout != "{{syncthing_version}}"
 
 - name: extract
-  command: tar xvzf /tmp/syncthing.tar.gz -C /tmp
-  when: download|changed
+  command: tar xvzf /tmp/syncthing_{{syncthing_version}}.tar.gz -C /tmp
+  when: version|failed or version.stdout != "{{syncthing_version}}"
 
 
 - name: copy executable to home dir
-  shell: cp /tmp/syncthing-*/syncthing /home/syncthing/bin/syncthing
-  when: download|changed
+  shell: cp /tmp/syncthing-*{{syncthing_version}}/syncthing {{syncthing_home}}/bin/syncthing
+  when: version|failed or version.stdout != "{{syncthing_version}}"
 
 - name: set ownership
-  file: path={{syncthing.home}} recurse=yes owner={{syncthing.user}} group={{syncthing.user}}
+  file: path={{syncthing_home}} recurse=yes owner={{syncthing_user}} group={{syncthing_user}}
 
-- name: install service
+- name: supervisor | install config
+  template: src=supervisor.conf dest=/etc/supervisor/conf.d/syncthing.conf mode=755
+  register: supervisor_conf
+  when: syncthing_use_supervisor
+
+- name: supervisor | reload
+  command: supervisorctl reload
+  when: syncthing_use_supervisor and supervisor_conf|changed
+
+- name: systemd | install service
   template: src=syncthing.service dest=/etc/systemd/system/syncthing.service mode=755
+  when: syncthing_use_systemd
 
-- name: activate service
+- name: systemd | activate service
   service: name=syncthing enabled=yes state=started
+  when: syncthing_use_systemd
 
-- name: waiting for configfile
-  wait_for: path={{syncthing.home}}/.config/syncthing/config.xml
+- name: systemd | reload service
+  service: name=syncthing state=reloaded
+  when: syncthing_use_systemd and systemd_conf_sysemd|changed
 
-- name: update listen ip
-  lineinfile: dest={{syncthing.home}}/.config/syncthing/config.xml
+- name: waiting for configfile (takes some time)
+  wait_for: path={{syncthing_home}}/.config/syncthing/config.xml
+
+- name: config.xml | webinterface address
+  lineinfile: dest={{syncthing_home}}/.config/syncthing/config.xml
               regexp="<address>[^<]+</address>"
-              line="        <address>{{syncthing.ip}}:8080</address>"
+              line="        <address>{{syncthing_address}}</address>"
   notify: restart syncthing
+
+- name: config.xml | listen address
+  lineinfile: dest={{syncthing_home}}/.config/syncthing/config.xml
+              regexp="<listenAddress>[^<]+</listenAddress>"
+              line="        <listenAddress>{{syncthing_listen}}</listenAddress>"
+  notify: restart syncthing
+
+- name: config.xml | localAnnounceEnabled
+  lineinfile: dest={{syncthing_home}}/.config/syncthing/config.xml
+              regexp="<localAnnounceEnabled>[^<]+</localAnnounceEnabled>"
+              line="        <localAnnounceEnabled>{{syncthing_localannounce|lower}}</localAnnounceEnabled>"
+  notify: restart syncthing
+
+- name: config.xml | globalAnnounceEnabled
+  lineinfile: dest={{syncthing_home}}/.config/syncthing/config.xml
+              regexp="<globalAnnounceEnabled>[^<]+</globalAnnounceEnabled>"
+              line="        <globalAnnounceEnabled>{{syncthing_globalannounce|lower}}</globalAnnounceEnabled>"
+  notify: restart syncthing
+
+- name: config.xml | upnpEnabled
+  lineinfile: dest={{syncthing_home}}/.config/syncthing/config.xml
+              regexp="<upnpEnabled>[^<]+</upnpEnabled>"
+              line="        <upnpEnabled>{{syncthing_upnp|lower}}</upnpEnabled>"
+  notify: restart syncthing
+
+- name: ufw | add rule
+  copy: src=syncthing.ufw dest=/etc/ufw/applications.d/syncthing owner=root mode=0644
+  when: syncthing_use_ufw
+
+- name: ufw | allow syncthing
+  ufw: rule=allow name=syncthing
+  when: syncthing_use_ufw

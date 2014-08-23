@@ -1,0 +1,4 @@
+[syncthing]
+title=Syncthing
+description=Syncthing replaces proprietary sync and cloud services with something open, trustworthy and decentralized.
+ports=22000/tcp

@@ -3,17 +3,33 @@
 Install and manage a syncthing (http://syncthing.net/) node on Linux.
 
 * download syncthing
-* install it in `{{syncthing.home}}/bin/`
-* create systemd service
-* manage listen ip
+* install it in `{{syncthing_home}}/bin/`
+* basic configuration
+* (optional) manage with supervisor or systemd
+* (optional) manage ufw
+
+
+# Requirements
+
+* supervisor (http://supervisord.org/) or systemd
+* ufw
+
 
 # Role Variables
 
-**syncthing.user**: The user who runs the syncthing daemon. Default: `syncthing`
+**syncthing_user**: The user who runs the syncthing daemon. Default: `syncthing`
+**syncthing_home**: Home dir of syncthing. Default: `/home/syncthing`
 
-**syncthing.ip**: IP address of this node. Default: `0.0.0.0`
+**syncthing_address**: IP:Port for webinterface. Default: `0.0.0.0:8080`
+**syncthing_listen**: IP:Port for remote connections. Default: `0.0.0.0:22000`
+**syncthing_localannounce**: enable/disable localAnnounce. Default: `true`
+**syncthing_globalannounce**: enable/disable globaleAnnounce. Default: `true`
+**syncthing_upnp**:  enable/disable `upnp`. Default: `true`
 
-**syncthing.home**: Home dir of syncthing. Default: `/home/syncthing`
+**syncthing_use_ufw**: Add rule to `ufw`. Default: `true`
+**syncthing_use_systemd**: Use `systemd` to manage process. Default: `false`
+**syncthing_use_supervisor**: Use `supervisor` to manage process. Default: `true`
+
 
 # Example
 
@@ -21,9 +37,13 @@ Install and manage a syncthing (http://syncthing.net/) node on Linux.
   roles:
     - role: syncthing
       syncthing:
-        user: syncthing
-        ip: 192.168.0.12
-        home: /mnt/storage/syncthing
+        syncthing_user: syncthing
+        syncthing_address: 0.0.0.0:8080
+        syncthing_listen: 0.0.0.0:22000
+        syncthing_home: /home/syncthing
+        syncthing_localannounce: true
+        syncthing_globalannounce: true
+        syncthing_upnp: true
 ```
 
 # Dependencies

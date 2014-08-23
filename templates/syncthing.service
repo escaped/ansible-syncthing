@@ -3,9 +3,9 @@ Description=Syncthing service
 After=network.target
 
 [Service]
-User={{syncthing.user}}
-Group={{syncthing.user}}
-ExecStart={{syncthing.home}}/bin/syncthing
+User={{syncthing_user}}
+Group={{syncthing_user}}
+ExecStart={{syncthing_home}}/bin/syncthing
 Restart=on-abort
 
 [Install]

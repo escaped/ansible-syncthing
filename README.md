@@ -17,18 +17,18 @@ Install and manage a syncthing (http://syncthing.net/) node on Linux.
 
 # Role Variables
 
-**syncthing_user**: The user who runs the syncthing daemon. Default: `syncthing`
-**syncthing_home**: Home dir of syncthing. Default: `/home/syncthing`
-
-**syncthing_address**: IP:Port for webinterface. Default: `0.0.0.0:8080`
-**syncthing_listen**: IP:Port for remote connections. Default: `0.0.0.0:22000`
-**syncthing_localannounce**: enable/disable localAnnounce. Default: `true`
-**syncthing_globalannounce**: enable/disable globaleAnnounce. Default: `true`
-**syncthing_upnp**:  enable/disable `upnp`. Default: `true`
-
-**syncthing_use_ufw**: Add rule to `ufw`. Default: `true`
-**syncthing_use_systemd**: Use `systemd` to manage process. Default: `false`
-**syncthing_use_supervisor**: Use `supervisor` to manage process. Default: `true`
+| Option                       | Description                             | Default           |
+| ---------------------------- | --------------------------------------- | ----------------- |
+| **syncthing_user**           | The user who runs the syncthing daemon. | `syncthing`
+| **syncthing_home**           | Home dir of syncthing.                  | `/home/syncthing`
+| **syncthing_address**        | IP:Port for webinterface.               | `0.0.0.0:8080`
+| **syncthing_listen**         | IP:Port for remote connections.         | `0.0.0.0:22000`
+| **syncthing_localannounce**  | enable/disable localAnnounce.           | `true`
+| **syncthing_globalannounce** | enable/disable globaleAnnounce.         | `true`
+| **syncthing_upnp**           | enable/disable `upnp`.                  | `true`
+| **syncthing_use_ufw**        | Add rule to `ufw`.                      | `true`
+| **syncthing_use_systemd**    | Use `systemd` to manage process.        | `false`
+| **syncthing_use_supervisor** | Use `supervisor` to manage process.     | `true`
 
 
 # Example

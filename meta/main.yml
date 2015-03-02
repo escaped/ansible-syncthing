@@ -1,7 +1,4 @@
 ---
-dependencies:
-  - { role: supervisor }
-
 galaxy_info:
   author: Alexander Frenzel
   description: Install and manage a syncthing node.

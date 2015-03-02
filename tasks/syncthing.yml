@@ -32,6 +32,10 @@
 - name: set ownership
   file: path={{syncthing_home}} recurse=yes owner={{syncthing_user}} group={{syncthing_user}}
 
+- name: supervisor | install
+  apt: pkg=supervisor state=present
+  when: syncthing_use_supervisor
+
 - name: supervisor | install config
   template: src=supervisor.conf dest=/etc/supervisor/conf.d/syncthing.conf mode=755
   register: supervisor_conf

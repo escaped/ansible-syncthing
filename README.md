@@ -36,14 +36,13 @@ Install and manage a syncthing (http://syncthing.net/) node on Linux.
 ```yaml
   roles:
     - role: syncthing
-      syncthing:
-        syncthing_user: syncthing
-        syncthing_address: 0.0.0.0:8080
-        syncthing_listen: 0.0.0.0:22000
-        syncthing_home: /home/syncthing
-        syncthing_localannounce: true
-        syncthing_globalannounce: true
-        syncthing_upnp: true
+      syncthing_user: syncthing
+      syncthing_address: 0.0.0.0:8080
+      syncthing_listen: 0.0.0.0:22000
+      syncthing_home: /home/syncthing
+      syncthing_localannounce: true
+      syncthing_globalannounce: true
+      syncthing_upnp: true
 ```
 
 # Dependencies

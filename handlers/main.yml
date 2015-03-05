@@ -1,3 +1,8 @@
 ---
 - name: restart syncthing
   command: supervisorctl restart syncthing
+  when: syncthing_use_supervisor
+
+- name: restart syncthing
+  command: systemctl restart syncthing
+  when: syncthing_use_systemd

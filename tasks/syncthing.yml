@@ -47,6 +47,7 @@
 
 - name: systemd | install service
   template: src=syncthing.service dest=/etc/systemd/system/syncthing.service mode=755
+  register: systemd_conf
   when: syncthing_use_systemd
 
 - name: systemd | activate service
@@ -55,7 +56,7 @@
 
 - name: systemd | reload service
   service: name=syncthing state=reloaded
-  when: syncthing_use_systemd and systemd_conf_sysemd|changed
+  when: syncthing_use_systemd and systemd_conf|changed
 
 - name: waiting for configfile (takes some time)
   wait_for: path={{syncthing_home}}/.config/syncthing/config.xml

@@ -3,6 +3,7 @@
   user: name={{syncthing_user}} shell=/bin/bash home={{syncthing_home}}
 
 - name: create `sync` and `home` folder
+  become: true
   file: path={{syncthing_home}}/Sync recurse=yes state=directory
         owner={{syncthing_user}} group={{syncthing_user}} mode=700
 

@@ -55,8 +55,9 @@
   service: name=syncthing enabled=yes state=started
   when: syncthing_use_systemd
 
-- name: systemd | reload services
-  command: systemctl daemon-reload
+- name: systemd | reload service
+  become: true
+  service: name=syncthing state=reloaded
   when: syncthing_use_systemd and systemd_conf|changed
 
 - name: waiting for configfile (takes some time)

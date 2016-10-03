@@ -1,11 +1,12 @@
 serf_architecture:
   x86_64: amd64
   i386:   386
-  armv5l: armv5
-  armv6l: armv6
-  armv7l: armv7
+  armv5l: arm
+  armv6l: arm
+  armv7l: arm
+  arm64: arm64
 
-syncthing_version: 0.13.9
+syncthing_version: 0.14.7
 syncthing_url: https://github.com/syncthing/syncthing/releases/download/v{{syncthing_version}}/syncthing-{{ansible_system|lower}}-{{serf_architecture[ansible_architecture]}}-v{{syncthing_version}}.tar.gz
 syncthing_user: syncthing
 syncthing_address: 0.0.0.0:8080

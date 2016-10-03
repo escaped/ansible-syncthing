@@ -1,5 +1,6 @@
 ---
 - name: add user
+  become: true
   user: name={{syncthing_user}} shell=/bin/bash home={{syncthing_home}}
 
 - name: create `sync` and `home` folder
@@ -8,50 +9,65 @@
         owner={{syncthing_user}} group={{syncthing_user}} mode=700
 
 - name: create `bin` folder
+  become: true
   file: path={{syncthing_home}}/bin state=directory
         owner={{syncthing_user}} group={{syncthing_user}} mode=700
 
 - name: check syncthing version
+  become: true
+  become_user: {{ syncthing_user }}
   shell: "{{syncthing_home}}/bin/syncthing --version | awk '{ print $2 }' | cut -c 2-"
   changed_when: false
   ignore_errors: true
   register: version
 
 - name: download
+  become: true
+  become_user: {{ syncthing_user }}
   get_url: url="{{syncthing_url}}" dest=/tmp/syncthing_{{syncthing_version}}.tar.gz
   when: version|failed or version.stdout != "{{syncthing_version}}"
 
 - name: extract
+  become: true
+  become_user: {{ syncthing_user }}
   command: tar xvzf /tmp/syncthing_{{syncthing_version}}.tar.gz -C /tmp
   when: version|failed or version.stdout != "{{syncthing_version}}"
 
 
 - name: copy executable to home dir
+  become: true
+  become_user: {{ syncthing_user }}
   shell: cp /tmp/syncthing-*{{syncthing_version}}/syncthing {{syncthing_home}}/bin/syncthing
   when: version|failed or version.stdout != "{{syncthing_version}}"
 
 - name: set ownership
+  become: true
   file: path={{syncthing_home}} recurse=yes owner={{syncthing_user}} group={{syncthing_user}}
 
 - name: supervisor | install
+  become: true
   apt: pkg=supervisor state=present
   when: syncthing_use_supervisor
 
 - name: supervisor | install config
+  become: true
   template: src=supervisor.conf dest=/etc/supervisor/conf.d/syncthing.conf mode=755
   register: supervisor_conf
   when: syncthing_use_supervisor
 
 - name: supervisor | reload
+  become: true
   command: supervisorctl reload
   when: syncthing_use_supervisor and supervisor_conf|changed
 
 - name: systemd | install service
+  become: true
   template: src=syncthing.service dest=/etc/systemd/system/syncthing.service mode=755
   register: systemd_conf
   when: syncthing_use_systemd
 
 - name: systemd | activate service
+  become: true
   service: name=syncthing enabled=yes state=started
   when: syncthing_use_systemd
 
@@ -61,15 +77,21 @@
   when: syncthing_use_systemd and systemd_conf|changed
 
 - name: waiting for configfile (takes some time)
+  become: true
+  become_user: {{ syncthing_user }}
   wait_for: path={{syncthing_home}}/.config/syncthing/config.xml
 
 - name: config.xml | webinterface address
+  become: true
+  become_user: {{ syncthing_user }}
   lineinfile: dest={{syncthing_home}}/.config/syncthing/config.xml
               regexp="<address>[^<]+</address>"
               line="        <address>{{syncthing_address}}</address>"
   notify: restart syncthing
 
 - name: config.xml | listen address
+  become: true
+  become_user: {{ syncthing_user }}
   lineinfile: dest={{syncthing_home}}/.config/syncthing/config.xml
               regexp="<listenAddress>[^<]+</listenAddress>"
               line="        <listenAddress>{{syncthing_listen}}</listenAddress>"
@@ -82,21 +104,27 @@
   notify: restart syncthing
 
 - name: config.xml | globalAnnounceEnabled
+  become: true
+  become_user: {{ syncthing_user }}
   lineinfile: dest={{syncthing_home}}/.config/syncthing/config.xml
               regexp="<globalAnnounceEnabled>[^<]+</globalAnnounceEnabled>"
               line="        <globalAnnounceEnabled>{{syncthing_globalannounce|lower}}</globalAnnounceEnabled>"
   notify: restart syncthing
 
 - name: config.xml | upnpEnabled
+  become: true
+  become_user: {{ syncthing_user }}
   lineinfile: dest={{syncthing_home}}/.config/syncthing/config.xml
               regexp="<upnpEnabled>[^<]+</upnpEnabled>"
               line="        <upnpEnabled>{{syncthing_upnp|lower}}</upnpEnabled>"
   notify: restart syncthing
 
 - name: ufw | add rule
+  become: true
   copy: src=syncthing.ufw dest=/etc/ufw/applications.d/syncthing owner=root mode=0644
   when: syncthing_use_ufw
 
 - name: ufw | allow syncthing
+  become: true
   ufw: rule=allow name=syncthing
   when: syncthing_use_ufw

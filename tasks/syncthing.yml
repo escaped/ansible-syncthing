@@ -98,6 +98,8 @@
   notify: restart syncthing
 
 - name: config.xml | localAnnounceEnabled
+  become: true
+  become_user: {{ syncthing_user }}
   lineinfile: dest={{syncthing_home}}/.config/syncthing/config.xml
               regexp="<localAnnounceEnabled>[^<]+</localAnnounceEnabled>"
               line="        <localAnnounceEnabled>{{syncthing_localannounce|lower}}</localAnnounceEnabled>"

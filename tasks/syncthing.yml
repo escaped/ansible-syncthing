@@ -73,7 +73,7 @@
 
 - name: systemd | reload service
   become: true
-  service: name=syncthing state=reloaded
+  service: name=syncthing state=restarted
   when: syncthing_use_systemd and systemd_conf|changed
 
 - name: waiting for configfile (takes some time)

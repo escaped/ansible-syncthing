@@ -20,3 +20,4 @@ syncthing_upnp: true
 syncthing_use_ufw: true
 syncthing_use_systemd: false
 syncthing_use_supervisor: true
+syncthing_use_upstart: false

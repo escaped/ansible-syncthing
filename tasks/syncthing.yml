@@ -21,24 +21,25 @@
   ignore_errors: true
   register: version
 
+- debug: msg="version={{version}}, mine={{syncthing_version}}"
+
 - name: download
   become: true
   become_user: "{{ syncthing_user }}"
   get_url: url="{{syncthing_url}}" dest=/tmp/syncthing_{{syncthing_version}}.tar.gz
-  when: version|failed or version.stdout != "{{syncthing_version}}"
+  when: version|failed or version.stdout | version_compare("{{syncthing_version}}", '<')
 
 - name: extract
   become: true
   become_user: "{{ syncthing_user }}"
   command: tar xvzf /tmp/syncthing_{{syncthing_version}}.tar.gz -C /tmp
-  when: version|failed or version.stdout != "{{syncthing_version}}"
-
+  when: version|failed or version.stdout | version_compare("{{syncthing_version}}", '<')
 
 - name: copy executable to home dir
   become: true
   become_user: "{{ syncthing_user }}"
   shell: cp /tmp/syncthing-*{{syncthing_version}}/syncthing {{syncthing_home}}/bin/syncthing
-  when: version|failed or version.stdout != "{{syncthing_version}}"
+  when: version|failed or version.stdout | version_compare("{{syncthing_version}}", '<')
 
 - name: set ownership
   become: true
@@ -76,6 +77,17 @@
   service: name=syncthing state=restarted
   when: syncthing_use_systemd and systemd_conf|changed
 
+- name: upstart | install service
+  become: true
+  template: src=upstart.conf dest=/etc/init/syncthing.conf mode=755
+  register: upstart_conf
+  when: syncthing_use_upstart
+
+- name: upstart | activate service
+  become: true
+  service: name=syncthing enabled=yes state=started
+  when: syncthing_use_upstart
+  
 - name: waiting for configfile (takes some time)
   become: true
   become_user: "{{ syncthing_user }}"
@@ -85,6 +97,7 @@
   become: true
   become_user: "{{ syncthing_user }}"
   lineinfile: dest={{syncthing_home}}/.config/syncthing/config.xml
+              insertbefore="</options>"
               regexp="<address>[^<]+</address>"
               line="        <address>{{syncthing_address}}</address>"
   notify: restart syncthing
@@ -93,6 +106,7 @@
   become: true
   become_user: "{{ syncthing_user }}"
   lineinfile: dest={{syncthing_home}}/.config/syncthing/config.xml
+              insertbefore="</options>"
               regexp="<listenAddress>[^<]+</listenAddress>"
               line="        <listenAddress>{{syncthing_listen}}</listenAddress>"
   notify: restart syncthing
@@ -101,6 +115,7 @@
   become: true
   become_user: "{{ syncthing_user }}"
   lineinfile: dest={{syncthing_home}}/.config/syncthing/config.xml
+              insertbefore="</options>"
               regexp="<localAnnounceEnabled>[^<]+</localAnnounceEnabled>"
               line="        <localAnnounceEnabled>{{syncthing_localannounce|lower}}</localAnnounceEnabled>"
   notify: restart syncthing
@@ -109,6 +124,7 @@
   become: true
   become_user: "{{ syncthing_user }}"
   lineinfile: dest={{syncthing_home}}/.config/syncthing/config.xml
+              insertbefore="</options>"
               regexp="<globalAnnounceEnabled>[^<]+</globalAnnounceEnabled>"
               line="        <globalAnnounceEnabled>{{syncthing_globalannounce|lower}}</globalAnnounceEnabled>"
   notify: restart syncthing
@@ -117,6 +133,7 @@
   become: true
   become_user: "{{ syncthing_user }}"
   lineinfile: dest={{syncthing_home}}/.config/syncthing/config.xml
+              insertbefore="</options>"
               regexp="<upnpEnabled>[^<]+</upnpEnabled>"
               line="        <upnpEnabled>{{syncthing_upnp|lower}}</upnpEnabled>"
   notify: restart syncthing

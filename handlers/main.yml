@@ -6,3 +6,7 @@
 - name: restart syncthing
   command: systemctl restart syncthing
   when: syncthing_use_systemd
+
+- name: restart syncthing
+  command: service restart syncthing
+  when: syncthing_use_upstart
